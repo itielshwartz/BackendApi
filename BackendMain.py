@@ -65,7 +65,7 @@ class HelloWorldApi(remote.Service):
     current_play_list_votes = []
 
     @endpoints.method(ID_RESOURCE, SongId,
-                      path='getNextSongId/{id}', http_method='GET',
+                      path='getSongId/{id}', http_method='GET',
                       name='greetings.getGreeting')
     def greeting_get(self, request):
         try:
