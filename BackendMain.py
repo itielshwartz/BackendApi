@@ -131,5 +131,20 @@ class HelloWorldApi(remote.Service):
         print(current_play_list_votes)
         return SongForAndroid(name=str(playlistIdToName[current_songs_index[new_id]]))
 
+    @endpoints.method(message_types.VoidMessage, SongsCollection,
+                      path='AllList/{id}', http_method='GET',
+                      name='ListAll')
+    def greetings_list_1(self, unused_request):
+        global current_play_list_votes
+        global current_songs_index
+        return SongsCollection(
+            items=
+                    [SongForAndroid(name=playlistIdToName.get(current_songs_index[0]) + str(current_play_list_votes[0])),
+                   SongForAndroid(name=playlistIdToName.get(current_songs_index[1]) + str(current_play_list_votes[1])),
+                   SongForAndroid(name=playlistIdToName.get(current_songs_index[2]) + str(current_play_list_votes[2])),
+                   SongForAndroid(name=playlistIdToName.get(current_songs_index[3]) + str(current_play_list_votes[3])),
+                   SongForAndroid(name=playlistIdToName.get(current_songs_index[4]) + str(current_play_list_votes[4])),
+                   SongForAndroid(name=playlistIdToName.get(current_songs_index[5]) + str(current_play_list_votes[5])),
+                   SongForAndroid(name=playlistIdToName.get(current_songs_index[6]) + str(current_play_list_votes[6]))])
 
 APPLICATION = endpoints.api_server([HelloWorldApi])
