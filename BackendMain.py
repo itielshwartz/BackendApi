@@ -98,7 +98,7 @@ class voTunesApi(remote.Service):
         my_playlist = get_youtube_playlist(request.play_list_id)
         ps = PlaceDB(play_list=my_playlist, id=request.id)
         ps.put()
-        return Song(name=my_playlist)
+        return Song(name=str(my_playlist))
 
     ID_RESOURCE_P_Test = endpoints.ResourceContainer(
         message_types.VoidMessage,
