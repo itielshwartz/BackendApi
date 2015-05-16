@@ -45,5 +45,15 @@ class all_gen_playlist:
     def get_max_vote(self, key, i):
         return self.dic.get(key).get_max_song()
 
+    def vote(self, key, up, down):
+        self.dic.get(key).add_vote(up)
+        if (down > -1):
+            self.dic.get(key).sub_vote(down)
+        return self.dic.get(key).votes
 
-current_playlist = all_gen_playlist()
+
+    def get_current_songs(self, key):
+        return self.dic.get(key).songs
+
+
+current_playlists = all_gen_playlist()

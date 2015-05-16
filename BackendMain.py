@@ -4,7 +4,6 @@ as well as those methods defined in an API.
 """
 
 import random
-import time
 
 import endpoints
 from protorpc import messages
@@ -18,9 +17,10 @@ from PlayListStub import playlistIdToName
 
 # TODO: Replace the following lines with client IDs obtained from the APIs
 # Console or Cloud Console.
-from backend_types.playlist_types_db import SongDB, PlayListDB,PlaceDB
-from backend_types.playlist_types_api import Place,Song, androidPlaylist, TestClass
-from backend_types.playlist_types_genereted import current_playlist
+from backend_types.playlist_types_db import PlaceDB
+from backend_types.playlist_types_api import Place, Song, androidPlaylist
+from backend_types.playlist_types_genereted import current_playlists
+from backend_types.youtube_data_wrapper import get_youtube_playlist
 
 WEB_CLIENT_ID = '572283433642-27216moiovs3calv9clvqtimsqmldi2e.apps.googleusercontent.com'
 ANDROID_CLIENT_ID = 'replace this with your Android client ID'
@@ -48,6 +48,10 @@ def generateAndroidPlaylist():
     return genPlaylist
 
 
+def convert_playlist(playlist):
+    pass
+
+
 @endpoints.api(name='voTunes', version='v1',
                allowed_client_ids=[WEB_CLIENT_ID, ANDROID_CLIENT_ID,
                                    IOS_CLIENT_ID, 'endpoints.API_EXPLORER_CLIENT_ID'],
@@ -56,15 +60,15 @@ class voTunesApi(remote.Service):
     ID_RESOURCE = endpoints.ResourceContainer(
         message_types.VoidMessage,
         id=messages.StringField(1),
-        )
+    )
 
-    #summery:
-    #Returns the next song to be played(max votes) in accordance with received key.
+    # summery:
+    # Returns the next song to be played(max votes) in accordance with received key.
     @endpoints.method(ID_RESOURCE, Song,
                       path='getNextSongId/{id}', http_method='GET',
                       name='getNextSongId')
     def voTunes_getNextSong(self, request):
-        currentPlace = current_playlist.get_max_vote()
+        currentPlace = current_playlists.get_max_vote()
         return Song(pos=currentPlace)
 
     ID_RESOURCE_S = endpoints.ResourceContainer(
@@ -77,101 +81,47 @@ class voTunesApi(remote.Service):
                       path='getListOfSongs/{id}', http_method='GET',
                       name='getListOfSongs')
     def voTunes_getListOfSongs(self, request):
-        key = int(request.id[0:6])
-        currentPlace = PlaceDB.query(PlaceDB.place.generatedKey == key).fetch(1)
-        return currentPlace[0].place.playingPlaylist
-
-    ID_RESOURCE_UserId = endpoints.ResourceContainer(
-        message_types.VoidMessage,
-        userKey=messages.IntegerField(1, variant=messages.Variant.INT32))
-
-    @endpoints.method(ID_RESOURCE_UserId, Song,
-                      path='getUserKey/{userKey}', http_method='GET',
-                      name='getUserKey')
-    def voTunes_getUserKey(self, request):
-        try:
-            return Song(pos=request.userKey)
-        except (IndexError, TypeError):
-            raise endpoints.NotFoundException('Greeting %s not found.' %
-                                              (request.id,))
+        playlist = current_playlists.get_current_songs(id)
+        msg_playlist = convert_playlist(playlist)
+        return msg_playlist
 
     ID_RESOURCE_P = endpoints.ResourceContainer(
         message_types.VoidMessage,
-        id=messages.StringField(1))
+        id=messages.StringField(1),
+        play_list_id=messages.StringField(2))
 
     #summery:
     #Received generated key and creates an entity in the DB as a new place
     @endpoints.method(ID_RESOURCE_P, Song,
-                      path='getPlaylistandUserKey/{id}', http_method='GET',
-                      name='getPlaylistandUserKey')
+                      path='addPlaylistandUserKey/', http_method='GET',
+                      name='addPlaylistandUserKey')
     def voTunes_getPlaylistandUserKey(self, request):
-        genKey = int(request.id[0:6])
-        my_place = Place(generatedKey=genKey, playingPlaylist=generateAndroidPlaylist(), currentVotes=[0 for _ in
-                                                                                                       xrange(
-                                                                                                           DEFAULT_PLAYLIST_SIZE)])  # place object with new generated playlist and initialized votes list
-        ps = PlaceDB(place=my_place, name='MyPubs')  #creates the entity
-        #key = ps.put() #adding place to DB
-
-        time.sleep(2)  #time for DB to get updated
-
-        new_places = PlaceDB.query().fetch()
-        print('####################################')
-        print('new_places = ' + str(new_places))
-        print('####################################')
-        return Song(name=str(new_places))
-
-    #summery:
-    #Received generated key, and 2 chars representing 2 songs in playlist.
-    #First char is for increment. Second char is for decrement(in case of changing the song choice).
-    #For both chars - 'I' represents ignore choice.
-    @endpoints.method(ID_RESOURCE_P, Place,
-                      path='voteForSong/{id}', http_method='GET',
-                      name='voteForSong')
-    def voTunes_voteForSong(self,
-                            request):  #id format: <id-6 numbers><song-digit-for-vote-up><song-digit-for-vote-down> (digit '9' means do not vote down any song)
-        key = int(request.id[0:6])
-        voteUp = request.id[6:7]
-        voteDown = request.id[7:8]
-        currentPlace = PlaceDB.query(PlaceDB.place.generatedKey == key).get()
-        if voteUp == 'O' and voteDown == 'O':  #initialize the votes - for debug
-            for i in xrange(DEFAULT_PLAYLIST_SIZE):
-                currentPlace.place.currentVotes[i] = 0
-        if voteUp != 'I':
-            currentPlace.place.currentVotes[int(voteUp)] += 1
-        if voteDown != 'I':
-            currentPlace.place.currentVotes[int(voteDown)] -= 1
-        currentPlace.put()
-        time.sleep(2)
-        return Place(currentVotes=currentPlace.place.currentVotes)
-
-    #summery:
-    #Received generated key, and 2 chars representing 2 songs in playlist.
-    #First char is for increment. Second char is for decrement(in case of changing the song choice).
-    #For both chars - 'I' represents ignore choice.
+        my_playlist = get_youtube_playlist(request.play_list_id)
+        ps = PlaceDB(play_list=my_playlist, id=request.id)
+        ps.put()
+        return Song(name=my_playlist)
 
 
-    ID_RESOURCE_P_Test = endpoints.ResourceContainer(
-        message_types.VoidMessage,
-        id=messages.StringField(1),
-        up=messages.StringField(2),
-        down=messages.StringField(3))
-    @endpoints.method(ID_RESOURCE_P_Test, TestClass,
-                      path='voteForSongTest/', http_method='GET',
-                      name='voteForSongTest')
-    def voTunes_voteForSongTest(self,request):  #id format: <id-6 numbers><song-digit-for-vote-up><song-digit-for-vote-down> (digit '9' means do not vote down any song)
-        id = request.id
-        up = request.up
-        down = request.down
-        song = SongDB(id="if",name="name",length="long")
-        my_playlist =  PlayListDB(id="playList",items = [song])
-        ps = PlaceDB(play_list = my_playlist ,id = '123')
-        var_1 = ps.put()
-        time.sleep(2)  #time for DB to get updated
-        vars = PlaceDB.get_by_id('123')
-        varses = PlaceDB.get_by_id('1234')
-        new_places = PlaceDB.query().fetch()
-        id_test = "id =" + str(id) + " up = " + str(up)
-        return TestClass(data=str(vars))
+ID_RESOURCE_P_Test = endpoints.ResourceContainer(
+    message_types.VoidMessage,
+    id=messages.StringField(1),
+    up=messages.IntegerField(2),
+    down=messages.IntegerField(3))
+
+# summery:
+# Received generated key, and 2 chars representing 2 songs in playlist.
+#First char is for increment. Second char is for decrement(in case of changing the song choice).
+#For both chars - 'I' represents ignore choice.
+@endpoints.method(ID_RESOURCE_P_Test, Place,
+                  path='voteForSong/{id}', http_method='GET',
+                  name='voteForSong')
+def voTunes_voteForSong(self,
+                        request):  #id format: <id-6 numbers><song-digit-for-vote-up><song-digit-for-vote-down> (digit '9' means do not vote down any song)
+    id = request.id
+    up = request.up
+    down = request.down
+    votes = current_playlists.vote(id, up, down)
+    return Place(currentVotes=votes)
 
 
 APPLICATION = endpoints.api_server([voTunesApi])

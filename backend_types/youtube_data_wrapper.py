@@ -17,7 +17,7 @@ def getVideoLength(id):
     return time
 
 
-def get(playlist_id):
+def get_youtube_playlist(playlist_id):
     youtube_1 = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
     playlistitems_list_request = youtube_1.playlistItems().list(
         playlistId=playlist_id,
