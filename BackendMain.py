@@ -8,6 +8,7 @@ from protorpc import remote
 
 from PlayListStub import playlistIdToName
 
+from google.appengine.api import memcache
 
 
 
@@ -15,7 +16,7 @@ from PlayListStub import playlistIdToName
 # Console or Cloud Console.
 from backend_types.playlist_types_db import PlaceDB, PlayListDB
 from backend_types.playlist_types_api import Place, Song, androidPlaylist
-from backend_types.playlist_types_genereted import current_playlists
+from backend_types.playlist_types_genereted import current_playlists, gen_playlist
 from backend_types.youtube_data_wrapper import get_youtube_playlist
 
 WEB_CLIENT_ID = '572283433642-27216moiovs3calv9clvqtimsqmldi2e.apps.googleusercontent.com'
@@ -61,11 +62,12 @@ class voTunesApi(remote.Service):
                       path='getNextSongId/{id}', http_method='GET',
                       name='getNextSongId')
     def voTunes_getNextSong(self, request):
-        currentPlace = current_playlists.get_max_vote(id)
-        songs = []
-        current_playlists.add_playlist(id, songs)
+        currentPlace = memcache.get(request.id).get_max_song()
+        temp_playlist = generatePlaylist(request.id)
+        q = gen_playlist(request.id, temp_playlist)
+        memcache.replace(request.id,q)
         # to do add genreted
-        return Song(pos=currentPlace)
+        return Song(pos=currentPlace.pos)
 
     ID_RESOURCE_S = endpoints.ResourceContainer(
         message_types.VoidMessage,
@@ -77,7 +79,7 @@ class voTunesApi(remote.Service):
                       path='getListOfSongs/{id}', http_method='GET',
                       name='getListOfSongs')
     def voTunes_getListOfSongs(self, request):
-        playlist = current_playlists.get_current_songs(id)
+        playlist = memcache.get(request.id).songs
         msg_playlist = convert_playlist(playlist)
         return msg_playlist
 
@@ -95,9 +97,10 @@ class voTunesApi(remote.Service):
         my_playlist = get_youtube_playlist(request.play_list_id)
         ps = PlaceDB(play_list=my_playlist, id=request.id)
         ps.put()
-        gen_playlist = generatePlaylist(request.id)
-        current_playlists.add_playlist(request.id,gen_playlist)
-        android_playlist  = convert_playlist(gen_playlist)
+        temp_playlist = generatePlaylist(request.id)
+        q = gen_playlist(request.id, temp_playlist)
+        memcache.add(request.id,q)
+        android_playlist  = convert_playlist(temp_playlist)
         return android_playlist
 
     ID_RESOURCE_P_Test = endpoints.ResourceContainer(
@@ -117,8 +120,24 @@ class voTunesApi(remote.Service):
         id = request.id
         up = request.up
         down = request.down
-        votes = current_playlists.vote(id, up, down)
+        playlist = memcache.get(request.id)
+        playlist.votes[up] +=1
+        if(down):
+            playlist.votes[down] -=1
+        memcache.replace(id,playlist)
+        return Place(currentVotes=playlist.votes)
+
+  # summery:
+    # Received generated key, and 2 chars representing 2 songs in playlist.
+    # First char is for increment. Second char is for decrement(in case of changing the song choice).
+    # For both chars - 'I' represents ignore choice.
+    @endpoints.method(ID_RESOURCE_P_Test, Place,
+                      path='getSongsVote/', http_method='GET',
+                      name='getSongsVote')
+    def voTunes_getsongs_vote(self, request):
+        votes = memcache.get(request.id).votes
         return Place(currentVotes=votes)
+
 
     # summery:
     # Received generated key, and 2 chars representing 2 songs in playlist.

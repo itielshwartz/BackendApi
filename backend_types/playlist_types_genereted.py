@@ -53,6 +53,9 @@ class all_gen_playlist:
             self.dic.get(key).sub_vote(down)
         return self.dic.get(key).votes
 
+    def getVotes(self, key):
+        return self.dic.get(key).votes
+
     def get_current_songs(self, key):
         return self.dic.get(key).songs
 
