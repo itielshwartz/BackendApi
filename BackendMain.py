@@ -124,20 +124,18 @@ class voTunesApi(remote.Service):
     # Received generated key, and 2 chars representing 2 songs in playlist.
     #First char is for increment. Second char is for decrement(in case of changing the song choice).
     #For both chars - 'I' represents ignore choice.
-    @endpoints.method(ID_RESOURCE_P_Test, Place,
+    @endpoints.method(ID_RESOURCE_P_Test, Song,
                       path='voteForSongs/', http_method='GET',
                       name='voteForSongs')
     def voTunes_voteForSongs(self,
                              request):  #id format: <id-6 numbers><song-digit-for-vote-up><song-digit-for-vote-down> (digit '9' means do not vote down any song)
         id = request.id
         q = get_youtube_playlist(id)
-        my_playlist = get_youtube_playlist(request.play_list_id)
-        ps = PlaceDB(play_list=my_playlist, id=request.id)
+        my_playlist = get_youtube_playlist(id)
+        ps = PlaceDB(play_list=my_playlist, id="123")
         ps.put()
-        up = request.up
-        down = request.down
-        votes = current_playlists.vote(id, up, down)
-        return Place(currentVotes=votes)
+        hi = PlaceDB.get_by_id("123")
+        return Song(name = str(hi))
 
 
 APPLICATION = endpoints.api_server([voTunesApi])

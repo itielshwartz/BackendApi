@@ -4,7 +4,7 @@ __author__ = 'ishwartz'
 
 from apiclient.discovery import build
 
-DEVELOPER_KEY = 'AIzaSyCZ7p97PFGdwD-3DVW6AVtR-t_5m-Uo3XM'
+DEVELOPER_KEY = 'AIzaSyDkxAhehyf2mH83JfjhzagmvEYEs_A17_k'
 YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
 
