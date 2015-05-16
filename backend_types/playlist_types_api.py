@@ -1,8 +1,14 @@
 from google.appengine.ext import ndb
 from google.appengine.ext.ndb import msgprop
 from protorpc import messages
+from backend_types.playlist_types_db import PlayListDB
 
 __author__ = 'ishwartz'
+
+
+class TestClass(messages.Message):
+    data = messages.StringField(2) #the position of the song in the original YouTube playlist
+
 
 class Song(messages.Message):
     pos = messages.IntegerField(1) #the position of the song in the original YouTube playlist
@@ -20,6 +26,3 @@ class Place(messages.Message):
     playingPlaylist = messages.MessageField(androidPlaylist, 3) # the playlist that is being displayed in the android
     currentVotes = messages.IntegerField(4, repeated=True)
 
-class PlaceDB(ndb.Model):
-    place = msgprop.MessageProperty(Place, indexed_fields=['generatedKey'])
-    name = ndb.StringProperty()

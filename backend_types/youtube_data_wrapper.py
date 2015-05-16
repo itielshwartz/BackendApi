@@ -1,4 +1,4 @@
-from types.Playlist import PlayList, Song
+from backend_types.playlist_types_db import PlayList, Song
 
 __author__ = 'ishwartz'
 
