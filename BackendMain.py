@@ -1,7 +1,3 @@
-"""Hello World API implemented using Google Cloud Endpoints.
-Defined here are the ProtoRPC messages needed to define Schemas for methods
-as well as those methods defined in an API.
-"""
 
 import random
 
@@ -69,16 +65,17 @@ class voTunesApi(remote.Service):
                       name='getNextSongId')
     def voTunes_getNextSong(self, request):
         currentPlace = current_playlists.get_max_vote(id)
-        current_playlists.add_playlist(id,songs)
-        #to do add genreted
+        songs = []
+        current_playlists.add_playlist(id, songs)
+        # to do add genreted
         return Song(pos=currentPlace)
 
     ID_RESOURCE_S = endpoints.ResourceContainer(
         message_types.VoidMessage,
         id=messages.StringField(1))
 
-    #summery:
-    #Returns the current playlist in accordance with received key.
+    # summery:
+    # Returns the current playlist in accordance with received key.
     @endpoints.method(ID_RESOURCE_S, androidPlaylist,
                       path='getListOfSongs/{id}', http_method='GET',
                       name='getListOfSongs')
@@ -92,8 +89,8 @@ class voTunesApi(remote.Service):
         id=messages.StringField(1),
         play_list_id=messages.StringField(2))
 
-    #summery:
-    #Received generated key and creates an entity in the DB as a new place
+    # summery:
+    # Received generated key and creates an entity in the DB as a new place
     @endpoints.method(ID_RESOURCE_P, Song,
                       path='addPlaylistandUserKey/', http_method='GET',
                       name='addPlaylistandUserKey')
@@ -103,27 +100,41 @@ class voTunesApi(remote.Service):
         ps.put()
         return Song(name=my_playlist)
 
+    ID_RESOURCE_P_Test = endpoints.ResourceContainer(
+        message_types.VoidMessage,
+        id=messages.StringField(1),
+        up=messages.IntegerField(2),
+        down=messages.IntegerField(3))
 
-ID_RESOURCE_P_Test = endpoints.ResourceContainer(
-    message_types.VoidMessage,
-    id=messages.StringField(1),
-    up=messages.IntegerField(2),
-    down=messages.IntegerField(3))
+    # summery:
+    # Received generated key, and 2 chars representing 2 songs in playlist.
+    # First char is for increment. Second char is for decrement(in case of changing the song choice).
+    # For both chars - 'I' represents ignore choice.
+    @endpoints.method(ID_RESOURCE_P_Test, Place,
+                      path='voteForSong/', http_method='GET',
+                      name='voteForSong')
+    def voTunes_voteForSong(self, request):
+        id = request.id
+        up = request.up
+        down = request.down
+        votes = current_playlists.vote(id, up, down)
+        return Place(currentVotes=votes)
 
-# summery:
-# Received generated key, and 2 chars representing 2 songs in playlist.
-#First char is for increment. Second char is for decrement(in case of changing the song choice).
-#For both chars - 'I' represents ignore choice.
-@endpoints.method(ID_RESOURCE_P_Test, Place,
-                  path='voteForSong/{id}', http_method='GET',
-                  name='voteForSong')
-def voTunes_voteForSong(self,
-                        request):  #id format: <id-6 numbers><song-digit-for-vote-up><song-digit-for-vote-down> (digit '9' means do not vote down any song)
-    id = request.id
-    up = request.up
-    down = request.down
-    votes = current_playlists.vote(id, up, down)
-    return Place(currentVotes=votes)
+    # summery:
+    # Received generated key, and 2 chars representing 2 songs in playlist.
+    #First char is for increment. Second char is for decrement(in case of changing the song choice).
+    #For both chars - 'I' represents ignore choice.
+    @endpoints.method(ID_RESOURCE_P_Test, Place,
+                      path='voteForSongs/', http_method='GET',
+                      name='voteForSongs')
+    def voTunes_voteForSongs(self,
+                             request):  #id format: <id-6 numbers><song-digit-for-vote-up><song-digit-for-vote-down> (digit '9' means do not vote down any song)
+        id = request.id
+        q = get_youtube_playlist(id)
+        up = request.up
+        down = request.down
+        votes = current_playlists.vote(id, up, down)
+        return Place(currentVotes=votes)
 
 
 APPLICATION = endpoints.api_server([voTunesApi])

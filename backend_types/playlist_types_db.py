@@ -9,7 +9,7 @@ class SongDB(ndb.Model):
     length = ndb.StringProperty()
     id = ndb.StringProperty()
     name = ndb.StringProperty()
-    pos = ndb.IndexProperty()
+    pos = ndb.IntegerProperty()
 
 
 

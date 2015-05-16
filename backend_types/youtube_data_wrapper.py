@@ -1,4 +1,4 @@
-from backend_types.playlist_types_db import PlayList, Song
+from backend_types.playlist_types_db import PlayListDB, SongDB
 
 __author__ = 'ishwartz'
 
@@ -25,14 +25,16 @@ def get_youtube_playlist(playlist_id):
         maxResults=50
     )
     items = []
-    current_play_list = PlayList(playlist_id, items)
+    i = 0
     while playlistitems_list_request:
         playlistitems_list_response = playlistitems_list_request.execute()
         # Print information about each video.
         for playlist_item in playlistitems_list_response["items"]:
             title = playlist_item["snippet"]["title"]
             video_id = playlist_item["snippet"]["resourceId"]["videoId"]
-            items.append(Song(video_id, title, str(getVideoLength(video_id))))
+            items.append(SongDB(id = video_id,name =  title,length =  str(getVideoLength(video_id)),pos = i))
+            i +=1
         playlistitems_list_request = youtube_1.playlistItems().list_next(
             playlistitems_list_request, playlistitems_list_response)
+    current_play_list = PlayListDB(items = items, id = playlist_id)
     return current_play_list
