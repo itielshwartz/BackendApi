@@ -13,7 +13,7 @@ from PlayListStub import playlistIdToName
 
 # TODO: Replace the following lines with client IDs obtained from the APIs
 # Console or Cloud Console.
-from backend_types.playlist_types_db import PlaceDB
+from backend_types.playlist_types_db import PlaceDB, PlayListDB
 from backend_types.playlist_types_api import Place, Song, androidPlaylist
 from backend_types.playlist_types_genereted import current_playlists
 from backend_types.youtube_data_wrapper import get_youtube_playlist
@@ -28,24 +28,21 @@ ANDROID_AUDIENCE = WEB_CLIENT_ID
 DEFAULT_PLAYLIST_SIZE = 7
 PLAYLIST_ORIGINAL_SIZE = 11
 
-
-def generateAndroidPlaylist():
-    genList = [0 for _ in xrange(DEFAULT_PLAYLIST_SIZE)]
-    i = 0
-    while i < DEFAULT_PLAYLIST_SIZE:
-        r = random.randint(0, PLAYLIST_ORIGINAL_SIZE - 1)
-        if r not in genList:
-            genList[i] = r
-            i += 1
-    songslist = [] * DEFAULT_PLAYLIST_SIZE
-    for i in xrange(DEFAULT_PLAYLIST_SIZE):
-        songslist.append(Song(pos=genList[i], name=playlistIdToName[genList[i]]))
-    genPlaylist = androidPlaylist(songs=songslist)
-    return genPlaylist
-
+def generatePlaylist(id):
+    currentPlace = PlaceDB.get_by_id(id)
+    youtubePlaylist = currentPlace.play_list
+    songsList = []
+    max_size = min(DEFAULT_PLAYLIST_SIZE,len(youtubePlaylist.items))
+    songsNumbers = random.sample(range(len(youtubePlaylist.items)), max_size)
+    for song in songsNumbers:
+        songsList.append(youtubePlaylist.items[song])
+    return songsList
 
 def convert_playlist(playlist):
-    pass
+    csongs = androidPlaylist()
+    for song in playlist:
+        csongs.songs.append(Song(pos = song.pos, name = song.name))
+    return csongs
 
 
 @endpoints.api(name='voTunes', version='v1',
@@ -91,14 +88,17 @@ class voTunesApi(remote.Service):
 
     # summery:
     # Received generated key and creates an entity in the DB as a new place
-    @endpoints.method(ID_RESOURCE_P, Song,
+    @endpoints.method(ID_RESOURCE_P, androidPlaylist,
                       path='addPlaylistandUserKey/', http_method='GET',
                       name='addPlaylistandUserKey')
     def voTunes_getPlaylistandUserKey(self, request):
         my_playlist = get_youtube_playlist(request.play_list_id)
         ps = PlaceDB(play_list=my_playlist, id=request.id)
         ps.put()
-        return Song(name=str(my_playlist))
+        gen_playlist = generatePlaylist(request.id)
+        current_playlists.add_playlist(request.id,gen_playlist)
+        android_playlist  = convert_playlist(gen_playlist)
+        return android_playlist
 
     ID_RESOURCE_P_Test = endpoints.ResourceContainer(
         message_types.VoidMessage,
