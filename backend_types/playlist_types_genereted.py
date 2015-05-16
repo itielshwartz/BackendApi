@@ -22,7 +22,7 @@ class gen_playlist:
         self.votes[i] -= 1
 
     def get_max_song(self, i):
-        self.original_place[self.votes.index(max(self.votes))]
+        self.songs[self.votes.index(max(self.votes))].pos
 
 
 class all_gen_playlist:
@@ -31,8 +31,8 @@ class all_gen_playlist:
 
     dic = dict()
 
-    def add_playlist(self, key, size, original):
-        self.dic[key] = gen_playlist(id, size, original)
+    def add_playlist(self, id,songs):
+        self.dic[id] = gen_playlist(id, songs)
 
     def add_vote(self, key, i):
         self.dic.get(key).add_vote(i)

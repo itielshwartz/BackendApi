@@ -69,6 +69,7 @@ class voTunesApi(remote.Service):
                       name='getNextSongId')
     def voTunes_getNextSong(self, request):
         currentPlace = current_playlists.get_max_vote(id)
+        current_playlists.add_playlist(id,songs)
         #to do add genreted
         return Song(pos=currentPlace)
 
