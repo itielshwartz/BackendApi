@@ -20,6 +20,7 @@ from PlayListStub import playlistIdToName
 # Console or Cloud Console.
 from backend_types.playlist_types_db import SongDB, PlayListDB,PlaceDB
 from backend_types.playlist_types_api import Place,Song, androidPlaylist, TestClass
+from backend_types.playlist_types_genereted import current_playlist
 
 WEB_CLIENT_ID = '572283433642-27216moiovs3calv9clvqtimsqmldi2e.apps.googleusercontent.com'
 ANDROID_CLIENT_ID = 'replace this with your Android client ID'
@@ -54,7 +55,8 @@ def generateAndroidPlaylist():
 class voTunesApi(remote.Service):
     ID_RESOURCE = endpoints.ResourceContainer(
         message_types.VoidMessage,
-        id=messages.StringField(1))
+        id=messages.StringField(1),
+        )
 
     #summery:
     #Returns the next song to be played(max votes) in accordance with received key.
@@ -62,16 +64,8 @@ class voTunesApi(remote.Service):
                       path='getNextSongId/{id}', http_method='GET',
                       name='getNextSongId')
     def voTunes_getNextSong(self, request):
-        key = int(request.id[0:6])
-        currentPlace = PlaceDB.query(PlaceDB.place.generatedKey == key).get()
-        m = currentPlace.place.currentVotes.index(max(currentPlace.place.currentVotes))
-        print('max votes is for song num. ' + str(m))
-
-        #generate new list and initialize votes
-        #currentPlace.place.currentVotes = [0 for _ in xrange(DEFAULT_PLAYLIST_SIZE)]
-        #currentPlace.place.playingPlaylist = generateAndroidPlaylist()
-        #currentPlace.put()
-        return Song(pos=m)
+        currentPlace = current_playlist.get_max_vote()
+        return Song(pos=currentPlace)
 
     ID_RESOURCE_S = endpoints.ResourceContainer(
         message_types.VoidMessage,
