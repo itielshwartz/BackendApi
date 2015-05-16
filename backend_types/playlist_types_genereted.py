@@ -12,7 +12,6 @@ class gen_playlist:
     def __init__(self, id, size, original):
         self.id = id
         self.votes = [0 for 0 in range(size)]
-        self.original_place = original
         self.time_change = datetime.datetime.now().time()
 
     def add_vote(self, i):
@@ -50,7 +49,6 @@ class all_gen_playlist:
         if (down > -1):
             self.dic.get(key).sub_vote(down)
         return self.dic.get(key).votes
-
 
     def get_current_songs(self, key):
         return self.dic.get(key).songs
