@@ -131,6 +131,9 @@ class voTunesApi(remote.Service):
                              request):  #id format: <id-6 numbers><song-digit-for-vote-up><song-digit-for-vote-down> (digit '9' means do not vote down any song)
         id = request.id
         q = get_youtube_playlist(id)
+        my_playlist = get_youtube_playlist(request.play_list_id)
+        ps = PlaceDB(play_list=my_playlist, id=request.id)
+        ps.put()
         up = request.up
         down = request.down
         votes = current_playlists.vote(id, up, down)
