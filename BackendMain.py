@@ -68,7 +68,8 @@ class voTunesApi(remote.Service):
                       path='getNextSongId/{id}', http_method='GET',
                       name='getNextSongId')
     def voTunes_getNextSong(self, request):
-        currentPlace = current_playlists.get_max_vote()
+        currentPlace = current_playlists.get_max_vote(id)
+        #to do add genreted
         return Song(pos=currentPlace)
 
     ID_RESOURCE_S = endpoints.ResourceContainer(

@@ -9,9 +9,10 @@ class gen_playlist:
     songs = []
     time_change = datetime.datetime.now().time()
 
-    def __init__(self, id, size, original):
+    def __init__(self, id,songs):
         self.id = id
-        self.votes = [0 for 0 in range(size)]
+        self.songs = songs
+        self.votes = [0 for 0 in range(songs.size())]
         self.time_change = datetime.datetime.now().time()
 
     def add_vote(self, i):
