@@ -15,7 +15,7 @@ from google.appengine.api import memcache
 # TODO: Replace the following lines with client IDs obtained from the APIs
 # Console or Cloud Console.
 from backend_types.playlist_types_db import PlaceDB, PlayListDB
-from backend_types.playlist_types_api import Place, Song, androidPlaylist
+from backend_types.playlist_types_api import Place, Song, androidPlaylist, webPlayList
 from backend_types.playlist_types_genereted import current_playlists, gen_playlist
 from backend_types.youtube_data_wrapper import get_youtube_playlist
 
@@ -56,6 +56,16 @@ class voTunesApi(remote.Service):
         id=messages.StringField(1),
     )
 
+
+    @endpoints.method(ID_RESOURCE, webPlayList,
+                      path='checkForPlaylist/{id}', http_method='GET',
+                      name='checkForPlaylist')
+    def voTunes_checkForPlaylist(self, request):
+        currentPlace = PlaceDB.get_by_id(request.id)
+        playlist_id = ""
+        if currentPlace:
+            playlist_id = currentPlace.play_list.id
+        return webPlayList(data = playlist_id)
     # summery:
     # Returns the next song to be played(max votes) in accordance with received key.
     @endpoints.method(ID_RESOURCE, Song,
@@ -121,8 +131,9 @@ class voTunesApi(remote.Service):
         up = request.up
         down = request.down
         playlist = memcache.get(request.id)
-        playlist.votes[up] +=1
-        if(down):
+        if(down is not None):
+            playlist.votes[down] -=1
+        if up is not None:
             playlist.votes[down] -=1
         memcache.replace(id,playlist)
         return Place(currentVotes=playlist.votes)

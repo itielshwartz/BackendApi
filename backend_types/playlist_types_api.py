@@ -6,7 +6,7 @@ from backend_types.playlist_types_db import PlayListDB
 __author__ = 'ishwartz'
 
 
-class TestClass(messages.Message):
+class webPlayList(messages.Message):
     data = messages.StringField(2) #the position of the song in the original YouTube playlist
 
 
