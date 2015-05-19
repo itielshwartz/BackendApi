@@ -109,7 +109,11 @@ class voTunesApi(remote.Service):
         ps.put()
         temp_playlist = generatePlaylist(request.id)
         q = gen_playlist(request.id, temp_playlist)
-        memcache.add(request.id,q)
+        data = memcache.get(request.id)
+        if data is None:
+            memcache.add(request.id,q)
+        else:
+             memcache.replace(request.id,q)
         android_playlist  = convert_playlist(temp_playlist)
         return android_playlist
 
