@@ -42,7 +42,7 @@ def generatePlaylist(id):
 def convert_playlist(playlist):
     csongs = androidPlaylist()
     for song in playlist:
-        csongs.songs.append(Song(pos = song.pos, name = song.name))
+        csongs.songs.append(Song(pos = song.pos, name = song.name, youtubeUrl = song.id))
     return csongs
 
 
@@ -134,7 +134,7 @@ class voTunesApi(remote.Service):
         if(down is not None):
             playlist.votes[down] -=1
         if up is not None:
-            playlist.votes[down] -=1
+            playlist.votes[up] +=1
         memcache.replace(id,playlist)
         return Place(currentVotes=playlist.votes)
 
