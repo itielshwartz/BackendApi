@@ -18,11 +18,14 @@ class Song(messages.Message):
 class androidPlaylist(messages.Message):
     id = messages.IntegerField(1) # the original playlist id of Youtube
     songs = messages.MessageField(Song, 2, repeated=True) # these are the songs that are displayed in the android
-    selectedSongsHistory = messages.IntegerField(3, repeated=True) #list of songs that has been chosen
 
 class Place(messages.Message):
     name = messages.StringField(1)
-    generatedKey = messages.IntegerField(2)
-    playingPlaylist = messages.MessageField(androidPlaylist, 3) # the playlist that is being displayed in the android
+    generatedKey = messages.StringField(2)
+    playingPlaylist = messages.StringField(3) # the playlist that is being displayed in the android
     currentVotes = messages.IntegerField(4, repeated=True)
+    number_of_song = messages.IntegerField(5)
+    loc = messages.StringField(6)
+    enable = messages.BooleanField(7)
+
 
