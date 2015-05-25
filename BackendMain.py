@@ -26,6 +26,17 @@ DEFAULT_PLAYLIST_SIZE = 7
 PLAYLIST_ORIGINAL_SIZE = 11
 
 
+def add_playlist_to_cache(request):
+    temp_playlist = generatePlaylist(request.id)
+    q = gen_playlist(request.id, temp_playlist)
+    data = memcache.get(request.id)
+    if data is None:
+        memcache.add(request.id, q)
+    else:
+        memcache.replace(request.id, q)
+    return q
+
+
 def generatePlaylist(id):
     currentPlace = PlaceDB.get_by_id(id)
     youtubePlaylist = currentPlace.get_current_playlist()
@@ -37,16 +48,18 @@ def generatePlaylist(id):
     return songsList
 
 
-def convert_playlist(playlist):
+def convert_playlist(playlist,songs):
     csongs = androidPlaylist()
+    i = 0
     for song in playlist:
-        csongs.songs.append(Song(pos=song.pos, name=song.name, youtubeUrl=song.key.id()))
+        csongs.songs.append(Song(pos=songs[i], name=song.name, youtubeUrl=song.key.id()))
+        i+=1
     return csongs
 
 
 def convert_place(currentPlace):
     generatedKey_new = ""
-    number_of_song_new = ""
+    number_of_song_new = -1
     loc_new = ""
     enable_new = False
     new_current_playlist = ""
@@ -76,6 +89,8 @@ class voTunesApi(remote.Service):
                       name='checkForPlaylist')
     def voTunes_checkForPlaylist(self, request):
         currentPlace = PlaceDB.get_by_id(request.id)
+        if currentPlace.current_play_list != "" :
+            playlist = add_playlist_to_cache(request.id)
         return convert_place(currentPlace)
 
     # summery:
@@ -101,8 +116,10 @@ class voTunesApi(remote.Service):
                       path='getListOfSongs/{id}', http_method='GET',
                       name='getListOfSongs')
     def voTunes_getListOfSongs(self, request):
-        playlist = memcache.get(request.id).songs
-        msg_playlist = convert_playlist(playlist)
+        playlist = memcache.get(request.id)
+        songs = playlist.songs
+        votes = playlist.votes
+        msg_playlist = convert_playlist(songs,votes)
         return msg_playlist
 
     ID_RESOURCE_P = endpoints.ResourceContainer(
@@ -112,6 +129,7 @@ class voTunesApi(remote.Service):
 
     # summery:
     # Received generated key and creates an entity in the DB as a new place
+
     @endpoints.method(ID_RESOURCE_P, androidPlaylist,
                       path='addPlaylistandUserKey/', http_method='GET',
                       name='addPlaylistandUserKey')
@@ -120,14 +138,8 @@ class voTunesApi(remote.Service):
         my_playlist.put()
         ps = PlaceDB(current_play_list=request.play_list_id, id=request.id)
         ps.put()
-        temp_playlist = generatePlaylist(request.id)
-        q = gen_playlist(request.id, temp_playlist)
-        data = memcache.get(request.id)
-        if data is None:
-            memcache.add(request.id, q)
-        else:
-            memcache.replace(request.id, q)
-        android_playlist = convert_playlist(temp_playlist)
+        temp_playlist = add_playlist_to_cache(request)
+        android_playlist = convert_playlist(temp_playlist.songs,temp_playlist.votes)
         return android_playlist
 
     ID_RESOURCE_P_Test = endpoints.ResourceContainer(
@@ -179,7 +191,7 @@ class voTunesApi(remote.Service):
         if new_enable is not None:
             setattr(new_place, 'enable', new_enable)
         if new_loc is not None:
-            setattr(new_place, 'loc',new_loc)
+            setattr(new_place, 'loc', new_loc)
         new_place.put()
         return convert_place(PlaceDB.get_by_id(id))
         # summery:
@@ -198,7 +210,7 @@ class voTunesApi(remote.Service):
     # summery:
     # Received generated key, and 2 chars representing 2 songs in playlist.
     # First char is for increment. Second char is for decrement(in case of changing the song choice).
-    #For both chars - 'I' represents ignore choice.
+    # For both chars - 'I' represents ignore choice.
     @endpoints.method(ID_RESOURCE_P_Test, Song,
                       path='voteForSongs/', http_method='GET',
                       name='voteForSongs')
