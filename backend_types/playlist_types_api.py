@@ -10,7 +10,7 @@ class webPlayList(messages.Message):
 class Song(messages.Message):
     pos = messages.IntegerField(1)  # the position of the song in the original YouTube playlist
     name = messages.StringField(2)
-    votes = messages.IntegerField(1)  # the position of the song in the original YouTube playlist
+    votes = messages.IntegerField(4)  # the position of the song in the original YouTube playlist
     youtubeUrl = messages.StringField(3)
 
 
