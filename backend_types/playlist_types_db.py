@@ -12,6 +12,7 @@ class SongDB(ndb.Model):
 
 class PlayListDB(ndb.Model):
     items = ndb.StructuredProperty(SongDB, repeated=True)
+    real_name = ndb.StringProperty()
 
 
 class PlaceDB(ndb.Model):

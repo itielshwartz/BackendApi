@@ -18,8 +18,14 @@ YOUTUBE_API_VERSION = "v3"
 
 
 def get_youtube_playlist(playlist_id):
-    youtube_1 = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
-    playlistitems_list_request = youtube_1.playlistItems().list(
+    youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
+    playlist_response = youtube.playlists().list(
+        id=playlist_id,
+        part="snippet",
+        maxResults=50
+    ).execute()
+    new_real_name = playlist_response["items"][0]["snippet"]["title"]
+    playlistitems_list_request = youtube.playlistItems().list(
         playlistId=playlist_id,
         part="snippet",
         maxResults=50
@@ -34,7 +40,7 @@ def get_youtube_playlist(playlist_id):
             video_id = playlist_item["snippet"]["resourceId"]["videoId"]
             items.append(SongDB(id=video_id, name=title, length="", pos=i))
             i += 1
-        playlistitems_list_request = youtube_1.playlistItems().list_next(
+        playlistitems_list_request = youtube.playlistItems().list_next(
             playlistitems_list_request, playlistitems_list_response)
-    current_play_list = PlayListDB(items=items, id=playlist_id)
+    current_play_list = PlayListDB(items=items, id=playlist_id, real_name = new_real_name)
     return current_play_list

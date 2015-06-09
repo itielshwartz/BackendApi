@@ -30,8 +30,6 @@ class voTunesApi(remote.Service):
                       name='checkForPlaylist')
     def voTunes_checkForPlaylist(self, request):
         currentPlace = PlaceDB.get_by_id(request.id)
-        if currentPlace.current_play_list != "":
-            playlist = add_playlist_to_cache(request)
         return convert_place(currentPlace)
 
     # summery:
@@ -73,21 +71,19 @@ class voTunesApi(remote.Service):
         if place is not None:
             curr_playlist = place.get_current_playlist()
             new_playlist_history = {i for i in place.play_list_history}
-        if (place.current_play_list != request.play_list_id):
-            new_playlist_history.add(request.play_list_id)
-            db_playlist_history = sorted([i for i in new_playlist_history])
-            ps = PlaceDB(current_play_list=request.play_list_id, id=request.id, play_list_history=db_playlist_history)
-            ps.put()
+        new_playlist_history.add(request.play_list_id)
+        db_playlist_history = sorted([i for i in new_playlist_history])
+        ps = PlaceDB(current_play_list=request.play_list_id, id=request.id, play_list_history=db_playlist_history)
+        ps.put()
         temp_playlist = add_playlist_to_cache(request)
         android_playlist = convert_playlist(temp_playlist.songs, temp_playlist.votes)
-        curr_playlist = place.get_current_playlist()
         return android_playlist
 
     # summery:
     # Received generated key, and 2 chars representing 2 songs in playlist.
     # First char is for increment. Second char is for decrement(in case of changing the song choice).
     # For both chars - 'I' represents ignore choice.
-    @endpoints.method(ID_RESOURCE_P_Test, Place,
+    @endpoints.method(ID_RESOURCE_P_Test, androidPlaylist,
                       path='voteForSong/', http_method='GET',
                       name='voteForSong')
     def voTunes_voteForSong(self, request):
@@ -100,7 +96,8 @@ class voTunesApi(remote.Service):
         if up is not None:
             playlist.votes[up] += 1
         memcache.replace(id, playlist)
-        return Place(currentVotes=playlist.votes)
+        android_playlist = convert_playlist(playlist.songs, playlist.votes)
+        return android_playlist
 
     # summery:
     # Received generated key, and 2 chars representing 2 songs in playlist.

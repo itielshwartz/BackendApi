@@ -38,7 +38,7 @@ def convert_playlist(playlist, songs):
     csongs = androidPlaylist()
     i = 0
     for song in playlist:
-        csongs.songs.append(Song(votes=songs[i], name=song.name, youtubeUrl=song.id))
+        csongs.songs.append(Song(votes=songs[i], name=song.name, youtubeUrl=song.id,pos=0))
         i += 1
     return csongs
 
