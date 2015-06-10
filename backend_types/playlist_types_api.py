@@ -15,8 +15,9 @@ class Song(messages.Message):
 
 
 class androidPlaylist(messages.Message):
-    id = messages.IntegerField(1)  # the original playlist id of Youtube
+    id = messages.StringField(1)  # the original playlist id of Youtube
     songs = messages.MessageField(Song, 2, repeated=True)  # these are the songs that are displayed in the android
+    name = messages.StringField(3)  # these are the songs that are displayed in the android
 
 
 class Place(messages.Message):
@@ -27,7 +28,7 @@ class Place(messages.Message):
     number_of_song = messages.IntegerField(5)
     loc = messages.StringField(6)
     enable = messages.BooleanField(7)
-    play_list_history = messages.StringField(8, repeated=True)  # the playlist that is being displayed in the android
+    play_list_history = messages.MessageField(androidPlaylist, 8, repeated=True)  # the playlist that is being displayed in the android
 
 
 
