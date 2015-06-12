@@ -29,6 +29,8 @@ class Place(messages.Message):
     loc = messages.StringField(6)
     enable = messages.BooleanField(7)
     play_list_history = messages.MessageField(androidPlaylist, 8, repeated=True)  # the playlist that is being displayed in the android
+    is_enable_now = messages.BooleanField(9)
+
 
 
 
