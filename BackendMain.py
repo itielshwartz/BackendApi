@@ -50,10 +50,13 @@ class voTunesApi(remote.Service):
                       path='sendRegId/', http_method='GET',
                       name='sendRegId')
     def voTunes_sendRegId(self, request):
-        current_reg_ids = memcache.get(request.id).reg_ids
-        current_reg_ids.append(request.reg_id)
+        playlist = memcache.get(request.id)
+        playlist.reg_ids.append(request.reg_id)
+        memcache.replace(request.id, playlist)
+
+        current_reg_ids=memcache.get(request.id).reg_ids
         votes = memcache.get(request.id).votes
-        return Place(currentVotes=votes)
+        return Place(reg_ids=current_reg_ids)
 
 
     # summery:
