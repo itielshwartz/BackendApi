@@ -12,11 +12,12 @@ class gen_playlist:
     reg_ids = []
     time_change = datetime.datetime.now().time()
 
-    def __init__(self, id, songs):
+    def __init__(self, id, songs,reg_ids):
         self.id = id
         self.songs = songs
         self.votes = [0 for i in range(len(songs))]
         self.time_change = datetime.datetime.now().time()
+        self.reg_ids = reg_ids
 
     def add_vote(self, i):
         self.votes[i] += 1

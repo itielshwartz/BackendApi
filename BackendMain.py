@@ -38,9 +38,10 @@ class voTunesApi(remote.Service):
                       path='getNextSongId/{id}', http_method='GET',
                       name='getNextSongId')
     def voTunes_getNextSong(self, request):
-        currentPlace = memcache.get(request.id).get_max_song()
+        curr_playlist =  memcache.get(request.id)
+        currentPlace = curr_playlist.get_max_song()
         temp_playlist = generatePlaylist(request.id)
-        q = gen_playlist(request.id, temp_playlist)
+        q = gen_playlist(request.id, temp_playlist,curr_playlist.reg_ids)
         memcache.replace(request.id, q)
         # to do add genreted
         return Song(pos=currentPlace.pos)
