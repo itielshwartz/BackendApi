@@ -25,6 +25,11 @@ ID_RESOURCE_P = endpoints.ResourceContainer(
     id=messages.StringField(1),
     play_list_id=messages.StringField(2))
 
+ID_RESOURCE_R = endpoints.ResourceContainer(
+    message_types.VoidMessage,
+    id=messages.StringField(1),
+    reg_id=messages.StringField(2))
+
 ID_RESOURCE_P_Test = endpoints.ResourceContainer(
     message_types.VoidMessage,
     id=messages.StringField(1),

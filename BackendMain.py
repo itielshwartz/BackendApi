@@ -3,14 +3,14 @@ from protorpc import remote
 from google.appengine.api import memcache
 
 
-
 # TODO: Replace the following lines with client IDs obtained from the APIs
 # Console or Cloud Console.
+from Utilities import sendMessageToClients
 from backend_types.playlist_types_api import Place, Song, androidPlaylist
 from backend_types.playlist_types_db import PlaceDB
 from backend_types.playlist_types_genereted import gen_playlist
 from backend_types.request_types import ID_RESOURCE, ID_RESOURCE_S, ID_RESOURCE_P_Test, ID_RESOURCE_SETTING, \
-    ID_RESOURCE_P
+    ID_RESOURCE_P, ID_RESOURCE_R
 from handlers.place_handler import convert_place
 from handlers.playlist_handler import add_playlist_to_cache, generatePlaylist, convert_playlist, add_playlistDB
 
@@ -44,6 +44,17 @@ class voTunesApi(remote.Service):
         memcache.replace(request.id, q)
         # to do add genreted
         return Song(pos=currentPlace.pos)
+
+    # summery: updates regIDs of a place with a new regID
+    @endpoints.method(ID_RESOURCE_R, Place,
+                      path='sendRegId/', http_method='GET',
+                      name='sendRegId')
+    def voTunes_sendRegId(self, request):
+        current_reg_ids = memcache.get(request.id).reg_ids
+        current_reg_ids.append(request.reg_id)
+        votes = memcache.get(request.id).votes
+        return Place(currentVotes=votes)
+
 
     # summery:
     # Returns the current playlist in accordance with received key.
@@ -97,6 +108,10 @@ class voTunesApi(remote.Service):
             playlist.votes[up] += 1
         memcache.replace(id, playlist)
         android_playlist = convert_playlist(playlist.songs, playlist.votes)
+        reg_ids = memcache.get(request.id).reg_ids
+        if (len(reg_ids) > 0):
+            sendMessageToClients(messageType = 'Votes-Updated',registration_ids = reg_ids ,data=android_playlist)
+
         return android_playlist
 
     # summery:
