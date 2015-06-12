@@ -14,11 +14,12 @@ __author__ = 'ishwartz'
 def add_playlist_to_cache(request):
     temp_playlist = generatePlaylist(request.id)
     data = memcache.get(request.id)
-    q = gen_playlist(request.id, temp_playlist)
     if data is None:
+        q = gen_playlist(request.id, temp_playlist,[])
         memcache.add(request.id, q)
     else:
-        memcache.replace(request.id, q)
+        q = gen_playlist(request.id, temp_playlist, data.reg_ids)
+        memcache.replace(request.id, q )
     return q
 
 

@@ -12,6 +12,7 @@ def convert_place(currentPlace):
     enable_new = False
     new_current_playlist = ""
     new_playlist_history = list()
+    is_enable_now_new = False
     if currentPlace:
         generatedKey_new = currentPlace.key.id()
         number_of_song_new = currentPlace.size_of_play_list
