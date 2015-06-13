@@ -4,7 +4,7 @@ import logging
 
 from gcm import *
 
-API_KEY = 'AIzaSyDkxAhehyf2mH83JfjhzagmvEYEs_A17_k'
+API_KEY = 'AIzaSyB_YcUTTKUI2x51g9HiqApT1qpaQ5nWR3o'
 URL = 'https://android.googleapis.com/gcm/send'
 
 def sendMessageToServer(registration_ids,messageType, data=None):
@@ -20,7 +20,7 @@ def sendMessageToServer(registration_ids,messageType, data=None):
     try:
         req = urllib2.Request(URL, json.dumps(payload), headers)
         response = urllib2.urlopen(req)
-
+        
     except urllib2.HTTPError as err:
         logging.info(payload)
         logging.info(err.code)
@@ -35,7 +35,7 @@ def sendMessageToClients(messageType, registration_ids,is_json=True,data = None)
 
     payload = dict()
     payload['messageType'] = messageType
-    payload['registration_ids'] =registration_ids
+    payload['registration_ids'] = registration_ids
     if data:
         payload['data'] = data
     req = urllib2.Request(URL, json.dumps(payload), headers)

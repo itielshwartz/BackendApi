@@ -101,7 +101,7 @@ class GCM(object):
     BACKOFF_INITIAL_DELAY = 1000
     MAX_BACKOFF_DELAY = 1024000
 
-    def __init__(self, api_key = 'AIzaSyDkxAhehyf2mH83JfjhzagmvEYEs_A17_k', url=GCM_URL, proxy=None):
+    def __init__(self, api_key = 'AIzaSyB_YcUTTKUI2x51g9HiqApT1qpaQ5nWR3o', url=GCM_URL, proxy=None):
         """ api_key : google api key
             url: url of gcm service.
             proxy: can be string "http://host:port" or dict {'https':'host:port'}

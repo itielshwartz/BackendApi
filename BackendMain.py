@@ -52,11 +52,12 @@ class voTunesApi(remote.Service):
                       name='sendRegId')
     def voTunes_sendRegId(self, request):
         playlist = memcache.get(request.id)
-        playlist.reg_ids.append(request.reg_id)
-        memcache.replace(request.id, playlist)
+        current_reg_ids = playlist.reg_ids
+        if (request.reg_id not in current_reg_ids):
+            current_reg_ids.append(request.reg_id)
+            memcache.replace(request.id, playlist)
 
-        current_reg_ids=memcache.get(request.id).reg_ids
-        votes = memcache.get(request.id).votes
+        #votes = memcache.get(request.id).votes
         return Place(reg_ids=current_reg_ids)
 
 
@@ -114,7 +115,7 @@ class voTunesApi(remote.Service):
         android_playlist = convert_playlist(playlist.songs, playlist.votes)
         reg_ids = memcache.get(request.id).reg_ids
         if (len(reg_ids) > 0):
-            sendMessageToClients(messageType = 'Votes-Updated',registration_ids = reg_ids ,data=android_playlist)
+            sendMessageToClients(messageType = 'Votes-Updated',registration_ids = reg_ids)
 
         return android_playlist
 
