@@ -20,7 +20,7 @@ def sendMessageToServer(registration_ids,messageType, data=None):
     try:
         req = urllib2.Request(URL, json.dumps(payload), headers)
         response = urllib2.urlopen(req)
-        
+
     except urllib2.HTTPError as err:
         logging.info(payload)
         logging.info(err.code)

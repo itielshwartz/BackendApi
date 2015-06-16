@@ -43,6 +43,10 @@ class voTunesApi(remote.Service):
         temp_playlist = generatePlaylist(request.id)
         q = gen_playlist(request.id, temp_playlist,curr_playlist.reg_ids)
         memcache.replace(request.id, q)
+        reg_ids = memcache.get(request.id).reg_ids
+        if (len(reg_ids) > 0):
+            sendMessageToClients(messageType = 'Playlist-Updated',registration_ids = reg_ids)
+
         # to do add genreted
         return Song(pos=currentPlace.pos)
 
