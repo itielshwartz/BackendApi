@@ -6,7 +6,7 @@ from gcm import *
 
 API_KEY = 'AIzaSyB_YcUTTKUI2x51g9HiqApT1qpaQ5nWR3o'
 URL = 'https://android.googleapis.com/gcm/send'
-
+#basic util for gcm
 def sendMessageToServer(registration_ids,messageType, data=None):
     headers = {'Authorization': 'key=%s' % API_KEY}
 

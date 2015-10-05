@@ -3,8 +3,6 @@ from protorpc import remote
 from google.appengine.api import memcache
 
 
-# TODO: Replace the following lines with client IDs obtained from the APIs
-# Console or Cloud Console.
 from Utilities import sendMessageToClients
 from backend_types.playlist_types_api import Place, Song, androidPlaylist
 from backend_types.playlist_types_db import PlaceDB
@@ -46,8 +44,6 @@ class voTunesApi(remote.Service):
         reg_ids = memcache.get(request.id).reg_ids
         if (len(reg_ids) > 0):
             sendMessageToClients(messageType = 'Playlist-Updated',registration_ids = reg_ids)
-
-        # to do add genreted
         return Song(pos=currentPlace.pos)
 
     # summery: updates regIDs of a place with a new regID
